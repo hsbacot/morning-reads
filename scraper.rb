@@ -31,22 +31,24 @@ class Reader
     puts "Getting Articles"
     @collections.each do |collection|
       doc = Nokogiri::HTML(open("#{@base}/#{collection}"))
-      link = doc.css('.bucket-item .postItem-title a').first
+      # if doc.css('.bucket-item .postItem-title a') returns [] use other layout
+      if doc.css('.bucket-item .postItem-title a').empty?
+        link = doc.css('.blockGroup--posts .block-title a').first
+      else
+        link = doc.css('.bucket-item .postItem-title a').first
+      end
       href = @base + link.attributes["href"].value
-      title = link.attributes["title"].value
+      title = link.text
       a = Article.new
       a.title = title
       a.link = href
       a.collection = collection.split("-").map(&:capitalize).join(" ")
       @articles << a
-    end 
-
-    @articles.each do |article|
-      puts article.collection
-      puts article.title
+      puts a.collection
+      puts a.title
       puts "\n"
-      @body << "#{article.collection} \n#{article.title} \n#{article.link}\n\n"
-    end
+      @body << "#{a.collection} \n#{a.title} \n#{a.link}\n\n"
+    end 
   end
 
 
